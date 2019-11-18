@@ -3,9 +3,9 @@ let add = $("#submitPost");
 let updatePost = $("#updatePost");
 lista = $("#load-posts");
 let del = $("#deletePost");
-
+let author = $("#searchByAuthor");
 function init(){
-    let url = 'http://localhost:8080/blog-posts';
+    let url = '/blog-posts';
     lista.html("");
     $.ajax({
         url: url,
@@ -34,7 +34,7 @@ add.on("click",event =>{
         author: $("#AddAuthor").val()
     }
     $.ajax({
-        url: "http://localhost:8080/blog-posts",
+        url: "/blog-posts",
         method: "POST",
         dataType: "JSON",
         contentType: "application/json",
@@ -50,13 +50,14 @@ del.on("click",event =>{
     let id = $("#DeletePostId").val();
     console.log(id);
     $.ajax({
-        url: "http://localhost:8080/blog-posts/"+id,
+        url: "/blog-posts/"+id,
         method: "DELETE",
         success: () =>{
             init();
         }
     })
 })
+
 
 updatePost.on("click",event =>{
     event.preventDefault();
@@ -74,7 +75,7 @@ updatePost.on("click",event =>{
         postUpdate["author"] = $("#UpdateAuthor").val()
     }
     $.ajax({
-        url: "http://localhost:8080/blog-posts/"+id,
+        url: "/blog-posts/"+id,
         method: "PUT",
         dataType: "JSON",
         contentType: "application/json",

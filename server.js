@@ -2,9 +2,12 @@ let express = require('express');
 let morgan = require('morgan');
 let uuid = require('uuid');
 var cors = require('cors')
+let mongoose = require("mongoose");
+let {PostList} = require("./blog-post-model");;
+let {DATABASE_URL,PORT} = require("./config");
 
 let app = express();
-
+mongoose.Promise = global.Promise;
 app.use(cors());
 app.use(express.static('public'));
 app.use( morgan( 'dev' ) );
@@ -13,48 +16,43 @@ app.use(express.urlencoded({ extended: true }))
 
 
 let fecha = new Date();
-let posts = [
-    {
-        id: uuid.v4(),
-        title: "titulo",
-        content: "dummy",
-        author: "Jose Adame",
-        publishDate: fecha.getDate() + "/" +  fecha.getMonth() + "/" + fecha.getFullYear()
-    }
-]
+
 
 app.get( '/blog-posts', (req, res) =>{
-	console.log( "Req query", req.query );
-	return res.status(200).json(posts);
+    PostList.get()
+    .then(posts=>{
+        return res.status(200).json(posts);
+    })
+	.catch(err=>{
+        res.statusMessage = "la DB salio mal";
+        return res.status(500).json({
+            code: 500,
+            message: "la BD salio mal"
+        })
+    })
 });
 
 app.get( '/blog-post?', (req, res) =>{
     let query = req.query.author;
     if(query != null){
-        let resultados = [];
-        posts.forEach(element => {
-            console.log(element["author"]);
-            console.log(query);
-            if(element["author"] == query){
-                console.log("encontro!");
-                resultados.push(element);
-            }
+       PostList.getAuthor(query)
+       .then(posts=>{
+           return res.status(200).json(posts);
+       })
+       .catch(error=>{
+           res.statusMessage = "la DB salio mal";
+           return res.status(500).json({
+            code: 500,
+            message: "la DB salio mal"
         });
-        console.log(resultados);
-        if(resultados.length == 0){
-            res.statusMessage = "No author found";
-            return res.status(404).json({
-                code: 404,
-                message: "No author found"
-            });
-        }
-            return res.status(200).json(resultados); 
+       })
+    }else{
+        res.statusMessage = "No author parameter given";
+        return res.status(406).json({
+            code: 406,
+            message: "No author parameter given"
+        });
     }
-    res.statusMessage = "No author parameter given";
-    return res.status(406).json({
-        code: 406,
-        message: "No author parameter given"
-    });
 });
 
 app.post("/blog-posts",(req,res) =>{
@@ -88,28 +86,42 @@ app.post("/blog-posts",(req,res) =>{
         author: req.body.author,
         publishDate: fecha.getDate() + "/" +  fecha.getMonth() + "/" + fecha.getFullYear()
     };
-
-    posts.push(json);
-    return res.status(201).json(json);
+    PostList.post(json)
+    .then(post=>{
+        return res.status(201).json(json);
+    })
+    .catch(err =>{
+        res.statusMessage = "La DB salio mal";
+        return res.status(500).json({
+            code:500,
+            message:"La DB salio mal"
+        })
+    })
 });
 
 app.delete("/blog-posts/:id",(req,res)=>{
     let id = req.params.id;
-    let i = 0;
-    posts.forEach(element => {
-        if(element["id"]==id){
-            posts.splice(i,1);
+    PostList.delete(id)
+    .then(post=>{
+        if(!post){
+            return res.status(404).json({
+                code:404,
+                message: "No existe un post con ese id"
+            });
+        }else{
             return res.status(200).json({
-                code: 200,
-                message: "deleted succesfully"
+                code:200,
+                message:"se borro el post correctamente"
             });
         }
-        i++;
-    });
-    return res.status(404).json({
-        code: 404,
-        message: "id not found"
-    });
+    })
+    .catch(err=>{
+        res.statusMessage = "La DB salio mal";
+        return res.status(500).json({
+            code:500,
+            message:"La DB salio mal"
+        })
+    })
 });
 
 app.put("/blog-posts/:id",(req,res)=>{
@@ -126,27 +138,80 @@ app.put("/blog-posts/:id",(req,res)=>{
             message: "path variables and body do not match"
         });
     }
-    posts.forEach(element => {
-        if(req.body.id == element.id){
-            if(req.body.content != null){
-                element.content = req.body.content;
-            }
-            if(req.body.author != null){
-                element.author = req.body.author;
-            }
-            if(req.body.publishDate != null){
-                element.publishDate = req.body.publishDate;
-            }
-            if(req.body.title != null){
-                element.title = req.body.title;
-            }
-            return res.status(202).json(element);
+
+    let newVal = {$set : {}};
+    let id = req.params.id;
+
+    if (Object.keys(req.body).length > 1){
+        if(req.body.content != null){
+            newVal["$set"]["content"] = req.body.content;
         }
+        if(req.body.author != null){
+            newVal["$set"]["author"] = req.body.author;
+        }
+        if(req.body.title != null){
+            newVal["$set"]["title"] = req.body.title;
+        }
+
+        PostList.update(id,newVal)
+        .then(post=>{
+            return res.status(202).json(post);
+        })
+        .catch(err =>{
+            res.statusMessage = "La DB salio mal";
+            return res.status(500).json({
+                code:500,
+                message:"La DB salio mal"
+            })
+        })
+    }
+
+
+
+});
+
+let server;
+
+function runServer(port, databaseUrl){
+    return new Promise( (resolve, reject) => {
+        mongoose.connect(databaseUrl, response =>{
+            if(response){
+                return reject(response);
+            }
+            else{
+                server = app.listen(port, () =>{
+                    console.log("App is running on port " + port);
+                    resolve();
+                })
+                .on("error", err =>{
+                    mongoose.disconnect();
+                    return reject(err);
+                });
+            }
+        });
     });
+}
 
+function closeServer(){
+    return mongoose.disconnect()
+            .then(() => {
+                return new Promise((resolve, reject) =>{
+                    console.log("Closing the server");
+                    server.close(err =>{
+                        if (err){
+                            return reject(err);
+                        }
+                        else{
+                            resolve();
+                        }
+                    });
+                });
+            });
+}
 
-});
+runServer(PORT, DATABASE_URL)
+        .catch(err => {
+            console.log(err);
+        });
 
-app.listen( '8080', () => {
-	console.log( "App running on localhost:8080" );
-});
+module.exports = {app, runServer, closeServer};
