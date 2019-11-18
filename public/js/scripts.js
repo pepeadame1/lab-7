@@ -55,8 +55,26 @@ del.on("click",event =>{
         success: () =>{
             init();
         }
-    })
-})
+    });
+});
+
+author.on("click",event=>{
+    authorName = $("#AuthorGet").val();
+    $.ajax({
+        url: "/blog-posts/author="+authorName,
+        method: "GET",
+        success: (posts) =>{
+            posts.forEach(element => {
+                id = element["id"];
+                author = element["author"];
+                title = element["title"];
+                content = element["content"];
+                publishDate = element["publishDate"];
+                $(lista).append("<div class="+box +"> <p>id: "+id+"</p> <p>title: "+title+"</p> <p>Date: "+publishDate+"</p> <p>Author: "+author+"</p> <p>Content: "+content+ "</p></div>");
+            });
+        }
+    });
+});
 
 
 updatePost.on("click",event =>{
@@ -75,7 +93,7 @@ updatePost.on("click",event =>{
         postUpdate["author"] = $("#UpdateAuthor").val()
     }
     $.ajax({
-        url: "/blog-posts/"+id,
+        url: "http://localhost:8080/blog-posts/"+id,
         method: "PUT",
         dataType: "JSON",
         contentType: "application/json",
