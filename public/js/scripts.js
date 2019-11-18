@@ -4,6 +4,8 @@ let updatePost = $("#updatePost");
 lista = $("#load-posts");
 let del = $("#deletePost");
 let author = $("#searchByAuthor");
+let mostrarTodo = $("#mostrarTodo");
+
 function init(){
     let url = '/blog-posts';
     lista.html("");
@@ -58,20 +60,26 @@ del.on("click",event =>{
     });
 });
 
+mostrarTodo.on("click",event=>{
+    init();
+})
+
 author.on("click",event=>{
     authorName = $("#AuthorGet").val();
     $.ajax({
-        url: "/blog-posts/author="+authorName,
+        url: "/blog-posts",
         method: "GET",
-        success: (posts) =>{
+        success: (author) =>{
             lista.html("");
-            posts.forEach(element => {
-                id = element["id"];
-                author = element["author"];
-                title = element["title"];
-                content = element["content"];
-                publishDate = element["publishDate"];
-                $(lista).append("<div class="+box +"> <p>id: "+id+"</p> <p>title: "+title+"</p> <p>Date: "+publishDate+"</p> <p>Author: "+author+"</p> <p>Content: "+content+ "</p></div>");
+            author.forEach(element => {
+                    if(authorName == element["author"]){
+                    id = element["id"];
+                    author = element["author"];
+                    title = element["title"];
+                    content = element["content"];
+                    publishDate = element["publishDate"];
+                    $(lista).append("<div class="+box +"> <p>id: "+id+"</p> <p>title: "+title+"</p> <p>Date: "+publishDate+"</p> <p>Author: "+author+"</p> <p>Content: "+content+ "</p></div>");
+                }
             });
         }
     });
@@ -94,7 +102,7 @@ updatePost.on("click",event =>{
         postUpdate["author"] = $("#UpdateAuthor").val()
     }
     $.ajax({
-        url: "http://localhost:8080/blog-posts/"+id,
+        url: "/blog-posts/"+id,
         method: "PUT",
         dataType: "JSON",
         contentType: "application/json",
