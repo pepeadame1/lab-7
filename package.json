@@ -9,8 +9,10 @@
   "author": "Jose Adame",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "morgan": "^1.9.1",
+    "nodemon": "^1.19.4",
     "uuid": "^3.3.3"
   }
 }

@@ -1,13 +1,16 @@
 let express = require('express');
 let morgan = require('morgan');
 let uuid = require('uuid');
+var cors = require('cors')
 
 let app = express();
 
+app.use(cors());
 app.use(express.static('public'));
 app.use( morgan( 'dev' ) );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+
 
 let fecha = new Date();
 let posts = [
@@ -23,7 +26,6 @@ let posts = [
 app.get( '/blog-posts', (req, res) =>{
 	console.log( "Req query", req.query );
 	return res.status(200).json(posts);
-
 });
 
 app.get( '/blog-post?', (req, res) =>{
@@ -46,12 +48,12 @@ app.get( '/blog-post?', (req, res) =>{
                 message: "No author found"
             });
         }
-            return res.status(200).json(resultados);  
+            return res.status(200).json(resultados); 
     }
     res.statusMessage = "No author parameter given";
     return res.status(406).json({
         code: 406,
-        message: "No author parameter given" 
+        message: "No author parameter given"
     });
 });
 
@@ -110,7 +112,7 @@ app.delete("/blog-posts/:id",(req,res)=>{
     });
 });
 
-app.put("blog-posts/:id",(req,res)=>{
+app.put("/blog-posts/:id",(req,res)=>{
     if(req.body.id == null){
         return res.status(406).json({
             code: 406,
@@ -124,7 +126,6 @@ app.put("blog-posts/:id",(req,res)=>{
             message: "path variables and body do not match"
         });
     }
-
     posts.forEach(element => {
         if(req.body.id == element.id){
             if(req.body.content != null){

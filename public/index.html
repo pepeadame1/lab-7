@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./css/style.css">
+    <title>Blog-Post</title>
+</head>
+<body>
+    <h1>Posts</h1>
+    <div id='load-posts'>
+
+    </div>
+
+    <h1>Add post</h1>
+    <label for="AddTitle">Title</label>
+    <input type="text" id="AddTitle">
+    <label for="AddContent">Content</label>
+    <input type="text" id="AddContent">
+    <label for="AddAuthor">Author</label>
+    <input type="text" id="AddAuthor">
+    <input type="button" value="Submit Post" id="submitPost">
+
+    <h1>Delete post</h1>
+    <label for="DeletePostId">ID:</label>
+    <input type="text" id="DeletePostId">
+    <input type="button" value="Delete Post" id="deletePost">
+
+    <h1>Update post</h1>
+    <label for="UpdateId">ID:</label>
+    <input type="text" id="UpdateId">
+    <label for="UpdateTitle">Title:</label>
+    <input type="text" id="UpdateTitle">
+    <label for="UpdateContent">Content:</label>
+    <input type="text" id="UpdateContent">
+    <label for="UpdateAuthor">Author:</label>
+    <input type="text" id="UpdateAuthor">
+    <input type="button" value="Update Post" id="updatePost">
+
+    <script
+    src="https://code.jquery.com/jquery-3.4.1.js"
+    integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+    crossorigin="anonymous">
+    </script>
+    <script src="./js/scripts.js"></script>
+</body>
+</html>
