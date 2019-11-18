@@ -64,6 +64,7 @@ author.on("click",event=>{
         url: "/blog-posts/author="+authorName,
         method: "GET",
         success: (posts) =>{
+            lista.html("");
             posts.forEach(element => {
                 id = element["id"];
                 author = element["author"];
